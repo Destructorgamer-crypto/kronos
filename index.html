@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Pestanya nova</title>
+    <link rel="icon" type="image/png" href="https://www.google.com/images/branding/product/ico/googleg_32dp.png">
+    <style>
+        :root {
+            --accent: #ffffff;
+            --bg: #000000;
+            --panel: rgba(255, 255, 255, 0.05);
+            --vpn: #ff4444;
+            --emergency-red: #cc0000;
+            --spotify-green: #1DB954;
+            --text-color: #ffffff;
+            --matrix-color: #ffffff;
+            --border-color: #444; /* Color de borde para botones top */
+        }
+
+        /* ===== TEMAS ===== */
+        /* Oscuro (predeterminado) */
+        body.theme-dark {
+            --bg: #000000; --panel: rgba(255,255,255,0.05);
+            --text-color: #ffffff; --accent: #ffffff; --matrix-color: #ffffff;
+            --border-color: #444;
+        }
+        /* Claro */
+        body.theme-light {
+            --bg: #ffffff; --panel: rgba(0,0,0,0.05);
+            --text-color: #000000; --accent: #000000; --matrix-color: #000000;
+            --border-color: #ccc;
+        }
+        /* Matrix (verde) */
+        body.theme-green {
+            --bg: #000000; --panel: rgba(0,255,65,0.06);
+            --text-color: #00ff41; --accent: #00ff41; --matrix-color: #00ff41;
+            --border-color: #0a3d1a;
+        }
+        /* Alerta (rojo) */
+        body.theme-red {
+            --bg: #000000; --panel: rgba(255,51,51,0.06);
+            --text-color: #ff3b3b; --accent: #ff3b3b; --matrix-color: #ff3b3b;
+            --border-color: #4d0000;
+        }
+        /* Cian */
+        body.theme-cyan {
+            --bg: #000000; --panel: rgba(0,229,255,0.06);
+            --text-color: #00e5ff; --accent: #00e5ff; --matrix-color: #00e5ff;
+            --border-color: #004d54;
+        }
+        /* Púrpura */
+        body.theme-purple {
+            --bg: #000000; --panel: rgba(185,103,255,0.06);
+            --text-color: #bb66ff; --accent: #bb66ff; --matrix-color: #bb66ff;
+            --border-color: #3d0a52;
+        }
+        /* Ámbar */
+        body.theme-amber {
+            --bg: #000000; --panel: rgba(255,176,0,0.06);
+            --text-color: #ffb000; --accent: #ffb000; --matrix-color: #ffb000;
+            --border-color: #4d3300;
+        }
+
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; font-family: 'Segoe UI', Roboto, sans-serif; overflow: hidden; background: #fff; }
+        
+        /* --- INTERFAZ GOOGLE --- */
+        #google-page { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 100; display: flex; flex-direction: column; transition: opacity 0.8s; }
+        #g-top { display: flex; justify-content: flex-end; padding: 15px 20px; align-items: center; gap: 15px; font-size: 13px; color: #5f6368; }
+        #g-main { flex: 1; display: flex; flex-direction: column; align-items: center; padding-top: 15vh; }
+        #g-logo { width: 272px; margin-bottom: 30px; cursor: pointer; }
+
+        #search-box {
+            width: 680px; height: 52px; border: 1px solid #dfe1e5; border-radius: 26px;
+            display: flex; align-items: center; padding: 0 14px 0 20px; transition: box-shadow 0.2s;
+            margin-bottom: 25px; box-sizing: border-box; position: relative;
+        }
+        #search-box:hover { box-shadow: 0 1px 6px rgba(32,33,36,0.28); border-color: rgba(223,225,229,0); }
+        
+        #search-box > svg:first-of-type { width: 20px; height: 20px; margin-right: 12px; flex-shrink: 0; }
+        #search-input { flex: 1; border: none; outline: none; font-size: 16px; padding-left: 0; background: transparent; }
+
+        #photo-icons {
+            display: flex; align-items: center; gap: 18px; flex-shrink: 0;
+            position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+        }
+        .g-icon-svg-tactical { height: 24px; width: 24px; cursor: pointer; display: block; }
+
+        #g-shortcuts { display: flex; gap: 25px; margin-top: 5px; }
+        .s-item { width: 88px; text-align: center; color: #3c4043; cursor: pointer; text-decoration: none; }
+        .s-icon { width: 48px; height: 48px; background: #f1f3f4; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
+        .s-text { font-size: 12px; }
+
+        #personalize-btn {
+            position: fixed; bottom: 16px; right: 16px; display: flex; align-items: center; gap: 8px;
+            padding: 8px 16px; border: 1px solid #dadce0; border-radius: 20px;
+            font-size: 14px; color: #747775; cursor: pointer; background: #fff;
+        }
+
+        /* --- KRONOS KERNEL --- */
+        #kronos-kernel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 1000; color: var(--text-color); font-family: 'Courier New', monospace; overflow-y: auto; }
+        #bin-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.30; z-index: -1; }
+        
+        /* Top Buttons Area */
+        #top-buttons-container { position: fixed; top: 20px; left: 20px; display: flex; align-items: center; gap: 10px; z-index: 2000; }
+        
+        .top-btn {
+            padding: 10px 15px; background: #191919; color: var(--text-color); border: 1px solid var(--border-color);
+            font-size: 11px; cursor: pointer; letter-spacing: 2px; transition: all 0.2s; font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+        body.theme-light .top-btn { background: #eee; color: #000; }
+
+        #emergency-btn:hover { background: var(--emergency-red); border-color: var(--emergency-red); color: #fff; }
+        #chat-open-btn:hover { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+        
+        #emergency-hint { font-size: 10px; color: #555; letter-spacing: 1px; margin-left: 5px; }
+
+        #theme-toggle { position: fixed; top: 20px; right: 120px; z-index: 2000; }
+        .theme-btn {
+            padding: 8px 12px; background: #191919; color: var(--text-color); border: 1px solid var(--border-color);
+            font-size: 10px; cursor: pointer; border-radius: 20px; font-weight: bold; font-family: 'Courier New', monospace;
+            display: flex; align-items: center; gap: 6px;
+        }
+        body.theme-light .theme-btn { background: #eee; color: #000; }
+        .theme-btn .swatch-dot {
+            width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+            box-shadow: 0 0 6px var(--accent); flex-shrink: 0;
+        }
+
+        /* Panel de personalización de temas */
+        #theme-panel {
+            position: fixed; top: 60px; right: 120px; z-index: 2500;
+            background: #0a0a0a; border: 1px solid var(--border-color); border-radius: 8px;
+            padding: 16px; width: 210px; display: none; flex-direction: column; gap: 10px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+            font-family: 'Courier New', monospace;
+        }
+        body.theme-light #theme-panel { background: #fafafa; }
+        #theme-panel.open { display: flex; }
+        #theme-panel-title {
+            font-size: 10px; letter-spacing: 2px; color: #888; margin-bottom: 4px;
+        }
+        .theme-option {
+            display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+            border: 1px solid #262626; border-radius: 6px; cursor: pointer;
+            background: #111; transition: all 0.15s; font-size: 11px; color: #ddd;
+            letter-spacing: 1px;
+        }
+        body.theme-light .theme-option { background: #f0f0f0; color: #222; border-color: #ddd; }
+        .theme-option:hover { border-color: var(--accent-preview, #666); transform: translateX(2px); }
+        .theme-option.active { border-color: var(--accent-preview, #fff); box-shadow: 0 0 0 1px var(--accent-preview, #fff); }
+        .theme-option .swatch {
+            width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+            background: var(--sw-bg); border: 2px solid var(--sw-fg);
+            box-shadow: 0 0 8px var(--sw-fg);
+        }
+
+        #spotify-top-wrap { position: fixed; top: 20px; right: 20px; z-index: 2000; }
+        .spotify-btn {
+            padding: 8px 20px; background: #111; color: #fff; border: 1px solid #333;
+            font-size: 11px; cursor: pointer; letter-spacing: 1.5px; transition: all 0.3s; font-weight: bold; border-radius: 20px;
+            text-decoration: none; display: inline-block; font-family: 'Courier New', monospace;
+        }
+        .spotify-btn:hover { background: var(--spotify-green); border-color: var(--spotify-green); color: #000; transform: scale(1.05); }
+
+        #ui-wrap { width: 100%; display: flex; flex-direction: column; align-items: center; padding: 60px 0 140px 0; animation: fadeIn 1.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        #main-header { font-size: 80px; letter-spacing: 20px; text-shadow: 0 0 15px rgba(255,255,255,0.5); margin-bottom: 15px; }
+        #ix-search { width: 450px; background: var(--panel); border: 1px solid #333; color: var(--text-color); padding: 15px; border-radius: 4px; outline: none; margin-bottom: 12px; text-align: center; font-size: 14px; }
+        #ix-vpn-link { color: var(--text-color); font-size: 11px; text-decoration: none; margin-bottom: 50px; opacity: 0.6; letter-spacing: 1px; }
+
+        #main-grid, #fav-grid { display: grid; width: 92%; max-width: 1400px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .game-btn { background: var(--panel); border: 1px solid #222; color: var(--text-color); padding: 20px; cursor: pointer; font-size: 11px; font-weight: bold; display: flex; flex-direction: column; border-radius: 2px; text-align: left; transition: all 0.3s ease; }
+        .game-btn:hover { background: var(--accent); color: var(--bg); transform: translateY(-3px); border-color: var(--accent); }
+        .btn-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .vpn-tag { color: var(--vpn); font-size: 9px; margin-top: 8px; font-weight: 800; letter-spacing: 1px; }
+        .fav-star { font-size: 18px; color: #444; }
+        .fav-star.active { color: #ffeb3b !important; }
+        .fav-section { border-bottom: 1px solid #222; padding-bottom: 30px; margin-bottom: 30px; width: 92%; display: none; }
+
+        /* --- CHAT SIDEBAR SYSTEM --- */
+        #chat-sidebar {
+            position: fixed; right: -320px; top: 0; width: 300px; height: 100%;
+            background: var(--bg); border-left: 1px solid #333; z-index: 3000;
+            transition: right 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            display: flex; flex-direction: column;
+        }
+        #chat-sidebar.open { right: 0; }
+        
+        #chat-auth { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 30px; gap: 10px; }
+        #chat-auth input { background: #000; border: 1px solid #333; color: #fff; padding: 12px; font-family: inherit; font-size: 12px; outline: none; text-align: center; }
+        #chat-auth input::placeholder { color: #555; }
+        #chat-auth button { background: var(--accent); color: var(--bg); border: none; padding: 12px; font-weight: bold; cursor: pointer; font-family: inherit; letter-spacing: 1px; }
+        
+        #chat-main { flex: 1; display: none; flex-direction: column; overflow: hidden; }
+        #chat-header { padding: 15px; font-size: 10px; color: #555; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        #chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; scrollbar-width: none; }
+        #chat-messages::-webkit-scrollbar { display: none; }
+        
+        .msg { border-left: 1px solid #333; padding-left: 10px; animation: fadeIn 0.3s ease; }
+        .msg-u { color: #555; font-size: 9px; display: block; margin-bottom: 4px; text-transform: uppercase; }
+        .msg-t { color: var(--text-color); font-size: 12px; word-break: break-all; line-height: 1.4; }
+        
+        #chat-input-wrap { padding: 20px; border-top: 1px solid #333; background: var(--panel); }
+        #chat-input { width: 100%; background: transparent; border: none; color: var(--text-color); font-family: inherit; outline: none; font-size: 12px; }
+
+        #ix-footer { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg); border-top: 1px solid #222; padding: 18px 0; z-index: 1100; }
+        #ix-footer-content { width: 95%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-color); letter-spacing: 1.5px; font-weight: bold; }
+        .footer-part { flex: 1; }
+        #footer-left { text-align: left; }
+        #footer-center { text-align: center; }
+        #footer-right { text-align: right; }
+    </style>
+</head>
+<body>
+
+    <div id="google-page">
+        <div id="g-top">
+            Gmail Imágenes 
+            <svg width="32" height="32" viewBox="0 0 24 24" style="border-radius:50%; margin-left: 5px; background: #f1f3f4; padding: 4px;">
+                <path fill="#5f6368" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+        </div>
+        <div id="g-main">
+            <img id="g-logo" src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" onclick="unlockKernel()">
+            <div id="search-box">
+                <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#000000" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+                <input type="text" id="search-input" autofocus autocomplete="off" placeholder="Busca en Google o escribe una URL">
+                <div id="photo-icons">
+                    <svg class="g-icon-svg-tactical" viewBox="0 0 24 24"><path fill="#000000" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path fill="#000000" d="M11 18.92V22h2v-3.08c3.39-.49 6-3.38 6-6.92h-2c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.54 2.61 6.43 6 6.92z"/></svg>
+                    <svg class="g-icon-svg-tactical" viewBox="0 0 24 24"><path fill="#000000" d="M5 15H3v4c0 1.1.9 2 2 2h4v-2H5v-4zM5 5h4V3H5c-1.1 0-2 .9-2 2v4h2V5zm14-2h-4v2h4v4h2V5c0-1.1-.9-2-2-2zm0 16h-4v2h4c1.1 0 2-.9 2-2v-4h-2v4z"/><path fill="#000000" d="M12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                </div>
+            </div>
+            <div id="g-shortcuts">
+                <div class="s-item"><div class="s-icon"><img src="https://www.gstatic.com/images/branding/product/1x/classroom_48dp.png" width="24"></div><div class="s-text">Classroom</div></div>
+                <div class="s-item"><div class="s-icon"><img src="https://www.gstatic.com/images/branding/product/1x/drive_48dp.png" width="24"></div><div class="s-text">Drive</div></div>
+                <div class="s-item"><div class="s-icon" style="font-size: 24px; color: #5f6368;">+</div><div class="s-text">Añadir acceso</div></div>
+            </div>
+        </div>
+        <div id="personalize-btn"><svg width="20" height="20" viewBox="0 0 24 24" style="margin-right:8px;"><path fill="#747775" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg> Personalizar Chrome</div>
+    </div>
+
+    <div id="kronos-kernel">
+        <div id="top-buttons-container">
+            <button id="emergency-btn" class="top-btn" onclick="triggerEmergency()">EMERGENCIA</button>
+            <button id="chat-open-btn" class="top-btn" onclick="toggleChat()">CHAT</button>
+            <span id="emergency-hint">APRETA ''CTRL''</span>
+        </div>
+
+        <div id="theme-toggle">
+            <button class="theme-btn" onclick="toggleThemePanel()"><span class="swatch-dot"></span>PERSONALIZAR</button>
+            <div id="theme-panel">
+                <div id="theme-panel-title">SELECCIONA UN TEMA</div>
+                <div class="theme-option" data-theme="dark" style="--sw-bg:#000000; --sw-fg:#ffffff;" onclick="setTheme('dark')">
+                    <span class="swatch"></span> OSCURO
+                </div>
+                <div class="theme-option" data-theme="light" style="--sw-bg:#ffffff; --sw-fg:#000000;" onclick="setTheme('light')">
+                    <span class="swatch"></span> CLARO
+                </div>
+                <div class="theme-option" data-theme="green" style="--sw-bg:#000000; --sw-fg:#00ff41;" onclick="setTheme('green')">
+                    <span class="swatch"></span> MATRIX
+                </div>
+                <div class="theme-option" data-theme="red" style="--sw-bg:#000000; --sw-fg:#ff3b3b;" onclick="setTheme('red')">
+                    <span class="swatch"></span> ALERTA ROJA
+                </div>
+                <div class="theme-option" data-theme="cyan" style="--sw-bg:#000000; --sw-fg:#00e5ff;" onclick="setTheme('cyan')">
+                    <span class="swatch"></span> CIAN
+                </div>
+                <div class="theme-option" data-theme="purple" style="--sw-bg:#000000; --sw-fg:#bb66ff;" onclick="setTheme('purple')">
+                    <span class="swatch"></span> PÚRPURA
+                </div>
+                <div class="theme-option" data-theme="amber" style="--sw-bg:#000000; --sw-fg:#ffb000;" onclick="setTheme('amber')">
+                    <span class="swatch"></span> ÁMBAR
+                </div>
+            </div>
+        </div>
+
+        <div id="spotify-top-wrap">
+            <div class="spotify-btn" onclick="openSpotify()">SPOTIFY</div>
+        </div>
+        
+        <canvas id="bin-canvas"></canvas>
+        <div id="ui-wrap">
+            <h1 id="main-header">KRONOS</h1>
+            <input type="text" id="ix-search" placeholder="FILTRAR SISTEMA..." oninput="loadMenu(this.value)">
+            <a id="ix-vpn-link" href="https://chromewebstore.google.com/detail/proton-vpn-fast-secure/jplgfhpmjnbigmhklmmbgecoobifkmpa?hl=es" target="_blank">DESCARGAR VPN ACCESO</a>
+            <div id="fav-container" class="fav-section"><div id="fav-grid"></div></div>
+            <div id="main-grid"></div>
+        </div>
+
+        <div id="chat-sidebar">
+            <div id="chat-auth">
+                <div style="font-size:10px; color:#555; text-align:center; margin-bottom:10px; letter-spacing:1px;">AUTH_REQUIRED</div>
+                <input type="text" id="chat-user" placeholder="USER_ID" autocomplete="off">
+                <input type="password" id="chat-pass" placeholder="PASSWORD">
+                <button onclick="loginChat()">CONNECT</button>
+            </div>
+            <div id="chat-main">
+                <div id="chat-header">
+                    <span>COMM_LINK_ACTIVE</span>
+                    <span onclick="logoutChat()" style="cursor:pointer; color:var(--accent);">[EXIT]</span>
+                </div>
+                <div id="chat-messages"></div>
+                <div id="chat-input-wrap">
+                    <input type="text" id="chat-input" placeholder="READY_FOR_INPUT..." autocomplete="off">
+                </div>
+            </div>
+        </div>
+
+        <div id="ix-footer">
+            <div id="ix-footer-content">
+                <div id="footer-left" class="footer-part">SISTEMAS: <span id="sys-count">0</span></div>
+                <div id="footer-center" class="footer-part">00:00:00</div>
+                <div id="footer-right" class="footer-part">© 2026 KRONOS_V1.2</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHoFU5TiEq0LwsTUc04NifV57n1wDQAHg",
+            authDomain: "indexumchat.firebaseapp.com",
+            databaseURL: "https://indexumchat-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "indexumchat",
+            storageBucket: "indexumchat.firebasestorage.app",
+            messagingSenderId: "67069413036",
+            appId: "1:67069413036:web:4725c1f35ae027a9d04109"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Global functions for module
+        window.loginChat = () => {
+            const user = document.getElementById('chat-user').value.trim();
+            const pass = document.getElementById('chat-pass').value;
+            if(user.length >= 3 && pass.length >= 4) {
+                localStorage.setItem('ix_chat_user', user);
+                checkChatSession();
+            } else {
+                alert("ERR: User > 2 chars, Pass > 3 chars.");
+            }
+        };
+
+        window.logoutChat = () => {
+            localStorage.removeItem('ix_chat_user');
+            location.reload();
+        };
+
+        function checkChatSession() {
+            const user = localStorage.getItem('ix_chat_user');
+            if(user) {
+                document.getElementById('chat-auth').style.display = 'none';
+                document.getElementById('chat-main').style.display = 'flex';
+                initChatLogic(user);
+            }
+        }
+
+        function initChatLogic(user) {
+            const input = document.getElementById('chat-input');
+            const box = document.getElementById('chat-messages');
+            
+            input.onkeypress = (e) => {
+                if(e.key === 'Enter' && input.value.trim()) {
+                    push(ref(db, 'messages'), { u: user, t: input.value, s: serverTimestamp() });
+                    input.value = '';
+                }
+            };
+
+            onChildAdded(ref(db, 'messages'), (snap) => {
+                const d = snap.val();
+                const m = document.createElement('div');
+                m.className = 'msg';
+                m.innerHTML = `<span class="msg-u">${d.u}</span><span class="msg-t">${d.t}</span>`;
+                box.appendChild(m);
+                
+                // Mantiene limpio borrando visualmente mensajes antiguos (>25)
+                if(box.childNodes.length > 25) box.removeChild(box.firstChild);
+                
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+        checkChatSession();
+    </script>
+
+    <script>
+        // Capa de seguridad
+        window.unlockKernel = () => {
+            document.getElementById('google-page').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('google-page').style.display = 'none';
+                document.getElementById('kronos-kernel').style.display = 'block';
+                initMatrix(); initFooter(); loadMenu();
+            }, 600);
+        };
+
+        function toggleChat() { 
+            document.getElementById('chat-sidebar').classList.toggle('open'); 
+        }
+
+        function triggerEmergency() { window.location.href = "https://classroom.google.com/"; }
+        window.addEventListener('keydown', (e) => { if (e.key === "Control") triggerEmergency(); });
+
+        const THEMES = ['dark', 'light', 'green', 'red', 'cyan', 'purple', 'amber'];
+
+        function applyTheme(name) {
+            if (!THEMES.includes(name)) name = 'dark';
+            document.body.classList.remove(...THEMES.map(t => `theme-${t}`));
+            document.body.classList.add(`theme-${name}`);
+            document.querySelectorAll('.theme-option').forEach(el => {
+                el.classList.toggle('active', el.dataset.theme === name);
+            });
+        }
+
+        function setTheme(name) {
+            applyTheme(name);
+            localStorage.setItem('ix_theme', name);
+            closeThemePanel();
+        }
+
+        function toggleThemePanel() {
+            document.getElementById('theme-panel').classList.toggle('open');
+        }
+
+        function closeThemePanel() {
+            document.getElementById('theme-panel').classList.remove('open');
+        }
+
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('theme-panel');
+            const wrap = document.getElementById('theme-toggle');
+            if (panel.classList.contains('open') && !wrap.contains(e.target)) closeThemePanel();
+        });
+
+        // Aplica el tema guardado (u OSCURO por defecto) al cargar
+        applyTheme(localStorage.getItem('ix_theme') || 'dark');
+
+        function openSpotify() {
+            const win = window.open('about:blank');
+            win.document.write(`
+                <html>
+                <head><title>Spotify Player</title></head>
+                <body style="margin:0; background:#000; display:flex; align-items:center; justify-content:center;">
+                    <div style="left: 0; width: 100%; height: 600px; position: relative;">
+                        <iframe src="https://open.spotify.com/embed/playlist/6hfxHDFSpmrx2EeA7JKwjv?utm_source=oembed"
+                                style="top: 0; left: 0; width: 100%; height: 100%; position: absolute; border: 0; border-radius: 12px;"
+                                allowfullscreen
+                                allow="clipboard-write *; encrypted-media *; fullscreen *; picture-in-picture *;">
+                        </iframe>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        const sInput = document.getElementById('search-input');
+        // El login principal permanece igual
+        sInput.onkeyup = (e) => {
+            if (e.keyCode === 13 && sInput.value.toUpperCase() === "KRONOS") {
+                unlockKernel();
+            }
+        };
+
+        let favorites = JSON.parse(localStorage.getItem('ix_favs')) || [];
+        const GAMES = [
+            { n: "CLOUD GAMING", u: "https://web.cloudmoonapp.com/es/" },
+            { n: "PINBALL MASTER", u: "https://azgames.io/pinball-master.embed" },
+            { n: "BOTTLE HOP", u: "https://azgames.io/bottle-hop.embed" },
+            { n: "RAGDOLL FLIP", u: "https://azgames.io/ragdoll-flip.embed" },
+            { n: "TRAFFIC ROAD", u: "https://azgames.io/traffic-road.embed" },
+            { n: "GOO GOO GAGA CLICKER", u: "https://azgames.io/goo-goo-gaga-clicker.embed" },
+            { n: "MY INSTANTS", u: "https://www.myinstants.com/es/index/es/" },
+            { n: "YOHOHO.IO", u: "https://yohoho.io/" },
+            { n: "SMASH KARTS", u: "https://smashkarts.io/", vpn: true },
+            { n: "SHELL SHOCKERS", u: "https://shellshock.io/", vpn: true },
+            { n: "GETTING OVER IT", u: "https://scratch.mit.edu/projects/389464290/embed" },
+            { n: "POKER 247 FREE", u: "https://www.247freepoker.com/", vpn: true },
+            { n: "SNAKE", u: "478297682" },
+            { n: "2048", u: "880374575" },
+            { n: "MINECRAFT", u: "https://eaglercraft.q13x.com/" },
+            { n: "SLOWROADS", u: "https://slowroads.io/" },
+            { n: "GEOMETRY DASH", u: "https://azgames.io/geometry-dash.embed" },
+            { n: "OPENGUESSR", u: "https://openguessr.com/", vpn: true },
+            { n: "FNAF", u: "https://run3.io/popgame/fnaf/fnaf1/" },
+            { n: "POLYTRACK", u: "https://polytrack.bitbucket.io/polytrack/" },
+            { n: "SUPERHOT", u: "https://superhotgame.com/superhot-prototype/" },
+            { n: "VEX 4", u: "https://ubg98.github.io/Vex4/" },
+            { n: "PAPER IO 2", u: "https://paperio2.gitlab.io/file" },
+            { n: "PAPER IO 2 LOBBY", u: "https://paperio.site/ps/?p-ca1e9hf5sv" },
+            { n: "MOTO X3M", u: "https://moto-x3m.bitbucket.io/" },
+            { n: "BITLIFE", u: "https://bitlifeonline.bitbucket.io/" },
+            { n: "SLOPE", u: "https://slopegame-online.com/" },
+            { n: "CS TIMER", u: "https://cstimer.net/" },
+            { n: "SUBWAY SURFERS", u: "https://subway-surfers.gg/" },
+            { n: "WPLACE", u: "https://wplace.live/" },
+            { n: "STEAL A BRAINROT", u: "https://gamea.azgame.io/rob-brainrot-2//" },
+            { n: "IRON SNOUT", u: "https://23azostore.github.io/s/iron-snout/" },
+            { n: "SOCCER DERBY", u: "https://rocketsoccerderby.gitlab.io/#" },
+            { n: "UNDEAD CORRIDOR", u: "https://gamea.azgame.io/undead-corridor/" },
+            { n: "HEAD SOCCER", u: "https://azgames.io/head-soccer-2024.embed" },
+            { n: "SLITHER.IO", u: "https://scratch.mit.edu/projects/108566337/embed" },
+            { n: "EV.IO", u: "https://ev.io/" },
+            { n: "FNAE", u: "https://fivenightsatepsteins.org/fivenightsatepsteins-online/embed?autoplay=true" },
+            { n: "MONKEY MART", u: "https://monkey-mart.gamestores.fun/" },
+            { n: "BASKET RANDOM", u: "https://ubg6969.gitlab.io/game/basketrandom.html" },
+            { n: "DRIFT HUNTERS", u: "https://azgames.io/drift-hunters.embed" },
+            { n: "GETAWAY SHOT", u: "https://getawayshootout.pages.dev/" },
+            { n: "BACKROOMS", u: "https://geet.in.net/get/backrooms/game.html" },
+            { n: "BASKET BATTLE", u: "https://gamesnacks.com/games/1e2ocejsf0rm8", vpn: true },
+            { n: "ESCAPE ROAD CITY 2", u: "https://game.azgame.io/escape-road-city-2/" },
+            { n: "SIGMA PROTOCOL", u: "https://sigmacompanyoficial.github.io/Idle-Foso-Cliker/" },
+            { n: "ZOMBS ROYALE", u: "https://zombsroyale.io/" },
+            { n: "VOLLEY RANDOM", u: "https://volley-random.gitlab.io/" },
+            { n: "VENGE.IO", u: "https://venge.io/" },
+            { n: "SPACE WAVES", u: "https://spacewaves.io/" },
+            { n: "SOCCER RANDOM", u: "https://soccer-randomx.github.io/" },
+            { n: "CRAZY TAXI", u: "https://azgames.io/crazy-taxi.embed" },
+            { n: "ORBIT KICK", u: "https://azgames.io/orbit-kick.embed" },
+            { n: "RAGDOLL PLAYGROUND", u: "https://azgames.io/ragdoll-playground.embed" },
+            { n: "SORRY BOB", u: "https://azgames.io/sorry-bob.embed" },
+            { n: "GOLF HIT", u: "https://azgames.io/golf-hit.embed" },
+            { n: "TRAFFIC RALLY", u: "https://azgames.io/traffic-rally.embed" },
+            { n: "DUDE THEFT AUTO", u: "https://azgames.io/dude-theft-auto.embed" },
+            { n: "1V1.LOL", u: "https://azgames.io/1v1lol.embed", vpn: true },
+            { n: "KRUNKER", u: "https://azgames.io/krunker.embed", vpn: true },
+            { n: "BUCKET SMASH", u: "https://azgames.io/bucket-smash.embed" },
+            { n: "GOLF PUZZLE", u: "https://azgames.io/golf-puzzle.embed" },
+            { n: "LIZARD CLICKER", u: "https://azgames.io/lizard-lizard-clicker.embed" },
+            { n: "SNAKE MODS", u: "https://googlesnakemods.com/v/current/" },
+            { n: "CHILL GUY CLICKER", u: "https://azgames.io/chill-guy-clicker.embed" },
+            { n: "CHASE RUSH", u: "https://azgames.io/chase-rush.embed" },
+            { n: "FALL FLAT BATTLE", u: "https://azgames.io/fall-flat-battle.embed" },
+            { n: "FUN TYPING IO", u: "https://azgames.io/fun-typing-io.embed" },
+            { n: "STICKMAN HOOK", u: "https://azgames.io/stickman-hook.embed" },
+            { n: "DRIVE MAD", u: "https://azgames.io/drive-mad.embed" },
+            { n: "CURVE RUSH", u: "https://azgames.io/curve-rush.embed" },
+            { n: "ORBIT BEATS", u: "https://azgames.io/orbit-beats.embed" },
+            { n: "BRAIN LINES", u: "https://azgames.io/brain-lines.embed" },
+            { n: "SPRUNKI", u: "https://azgames.io/sprunki.embed" },
+            { n: "HOCKEY RANDOM", u: "https://azgames.io/hockey-random.embed" },
+            { n: "KNIFE MASTER", u: "https://azgames.io/knife-master.embed" },
+            { n: "BASKETBALL STARS", u: "https://azgames.io/basketball-stars.embed" },
+            { n: "FURY CHASE", u: "https://azgames.io/fury-chase.embed" },
+            { n: "ORBIT RUSH", u: "https://azgames.io/orbit-rush.embed" },
+            { n: "RAGDOLL LAUNCHER", u: "https://azgames.io/ragdoll-launcher.embed" },
+            { n: "SLOPE RIDER", u: "https://azgames.io/slope-rider.embed" },
+            { n: "TUNG SAHUR HORROR", u: "https://azgames.io/tung-sahur-horror.embed" },
+            { n: "RETRO BLASTER", u: "https://azgames.io/retro-blaster.embed" },
+            { n: "SCARY WHEELS", u: "https://azgames.io/scary-wheels.embed" },
+            { n: "LEVEL DEVIL", u: "https://level-devil.io/" },
+            { n: "MELON SANDBOX", u: "https://melonsandbox.com/", vpn: true },
+            { n: "TETRIX ONLINE", u: "https://azgames.io/tetrix-online.embed" },
+            { n: "SHIP SMASHER", u: "https://azgames.io/ship-smasher.embed" },
+            { n: "LAB HAVOC", u: "https://azgames.io/lab-havoc.embed" },
+            { n: "RETRO RUSH", u: "https://azgames.io/retro-rush.embed" },
+            { n: "GARFIELD WAR", u: "https://azgames.io/garfield-war.embed" },
+            { n: "RUBY RAID", u: "https://azgames.io/ruby-raid.embed" },
+            { n: "BOW BATTLE", u: "https://azgames.io/bow-battle.embed" },
+            { n: "HOLE ARENA", u: "https://azgames.io/hole-arena.embed" },
+            { n: "PATATAP", u: "https://patatap.com/" },
+            { n: "BORED BUTTON", u: "https://www.boredbutton.com/" },
+            { n: "ZOOMQUILT", u: "https://zzz.zoomquilt.org/" },
+            { n: "100.000 STARS", u: "https://stars.chromeexperiments.com/" },
+            { n: "INVISIBLE COW", u: "https://findtheinvisiblecow.com/" },
+            { n: "OPTICAL TOYS", u: "https://optical.toys/" },
+            { n: "PERFECT TIMING", u: "https://perfect-timing-gamma.vercel.app/" },
+            { n: "CHROMA", u: "https://chroma-five-mu.vercel.app/" },
+            { n: "TYPE THE ALPHABET", u: "https://typethealphabet.app/" },
+            { n: "CROSSY ROAD", u: "https://crossyroadgame.io/" },
+            { n: "BRAWL TIME NINJA", u: "https://brawltime.ninja/es" },
+            { n: "WORDLE", u: "https://lapalabradeldia.com/" },
+            { n: "BLUMGI SLIME", u: "https://blumgislime2.io/blumgi-slime" },
+            { n: "BLUMGI BALL", u: "https://blumgislime2.io/blumgi-ball" },
+            { n: "BRAIN LINES", u: "https://azgames.io/brain-lines.embed" },
+            { n: "SURVIVAL RACE", u: "https://survival-race.io/" },
+            { n: "GOOGLE EARTH", u: "https://earth.google.com/static/multi-threaded/versions/20260604_1201_RC05/index.html?" }
+        ];
+
+        function loadMenu(filter = "") {
+            const mGrid = document.getElementById('main-grid'); const fGrid = document.getElementById('fav-grid');
+            mGrid.innerHTML = ""; fGrid.innerHTML = "";
+            const filtered = GAMES.filter(g => g.n.includes(filter.toUpperCase()));
+            const favs = filtered.filter(g => favorites.includes(g.n));
+            document.getElementById('sys-count').innerText = GAMES.length;
+            if (favs.length > 0) { document.getElementById('fav-container').style.display = "block"; favs.forEach((g, i) => fGrid.appendChild(createCard(g, i))); }
+            else { document.getElementById('fav-container').style.display = "none"; }
+            filtered.forEach((g, i) => mGrid.appendChild(createCard(g, i)));
+        }
+
+        function createCard(g, i) {
+            const card = document.createElement('div'); card.className = 'game-btn'; card.style.animationDelay = `${i * 0.03}s`;
+            card.innerHTML = `<div class="btn-top"><span>${g.n}</span><span class="fav-star ${favorites.includes(g.n)?'active':''}" onclick="toggleFav('${g.n}', event)">★</span></div>${g.vpn ? '<div class="vpn-tag">VPN</div>' : ''}`;
+            card.onclick = () => {
+                let finalUrl = (g.u.length < 15 && !g.u.includes('.')) ? `https://turbowarp.org/${g.u}/embed?autoplay=1` : g.u;
+                const win = window.open('about:blank');
+                win.document.write(`<html><head><title>System Load</title></head><style>body,html{margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;}iframe{width:100%;height:100%;border:none;position:absolute;top:0;left:0;}</style><body><iframe src="${finalUrl}" allow="autoplay; fullscreen; keyboard" allowfullscreen></iframe></body></html>`);
+            };
+            return card;
+        }
+
+        function toggleFav(n, e) { e.stopPropagation(); favorites.includes(n) ? favorites = favorites.filter(f => f !== n) : favorites.push(n); localStorage.setItem('ix_favs', JSON.stringify(favorites)); loadMenu(document.getElementById('ix-search').value); }
+        function initFooter() { setInterval(() => { document.getElementById('footer-center').innerText = new Date().toLocaleTimeString(); }, 1000); }
+        function initMatrix() {
+            const c = document.getElementById('bin-canvas'); const ctx = c.getContext('2d');
+            c.width = window.innerWidth; c.height = window.innerHeight;
+            const drops = Array(Math.floor(c.width / 20)).fill(1);
+            ctx.font = "14px Courier New";
+            setInterval(() => {
+                ctx.fillStyle = document.body.classList.contains('theme-light') ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"; 
+                ctx.fillRect(0,0,c.width,c.height);
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--matrix-color');
+                drops.forEach((y, i) => {
+                    ctx.fillText(Math.floor(Math.random()*2), i*20, y*14);
+                    if(y*14 > c.height && Math.random() > 0.975) drops[i] = 0; drops[i]++;
+                });
+            }, 33);
+        }
+    </script>
+</body>
+</html>
+
+
+
